@@ -1,3 +1,12 @@
+'''
+Author: yxsong
+Date: 2021-08-16 20:18:53
+LastEditTime: 2021-08-16 20:47:37
+LastEditors: yxsong
+Description: 
+FilePath: \RNN\rnn.py
+ 
+'''
 #!/usr/bin/python
 # # -*- coding=utf-8 -*-
 
@@ -9,8 +18,9 @@ from keras.models import Sequential,load_model
 from keras.layers import Dense,SimpleRNN,Activation,BatchNormalization,Dense,LSTM,Conv1D,MaxPool1D,Flatten
 from common_func import loss_history,evaluate_method,read_data
 from keras import optimizers
-from tensorflow import set_random_seed
-set_random_seed(6)
+import tensorflow as tf
+
+tf.random.set_seed(6)
 np.random.seed(6)
 train_x, train_y_1D = read_data.read_data('train_data_yongxin.csv')
 test_x, test_y_1D = read_data.read_data('test_data_yongxin.csv')
@@ -25,7 +35,7 @@ model.add(SimpleRNN(50, batch_input_shape=(None, 16, 1), unroll=True))
 # model.add(Dropout(0.5))
 model.add(Dense(2))
 model.add(Activation('softmax'))
-optimizer = optimizers.Adam()
+optimizer = optimizers.adam_v2.Adam()
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 # Fit the model
 print(model.summary())

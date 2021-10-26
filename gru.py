@@ -1,16 +1,29 @@
+'''
+Author: yxsong
+Date: 2021-08-16 20:18:53
+LastEditTime: 2021-08-16 21:19:32
+LastEditors: yxsong
+Description: 
+FilePath: \RNN\gru.py
+ 
+'''
 #!/usr/bin/python
 # # -*- coding=utf-8 -*-
 
 import random
-from sklearn import metrics
-from keras.utils import np_utils
+
 import numpy as np
-from keras.models import Sequential,load_model
-from keras.layers import Dense,SimpleRNN,Activation,BatchNormalization,Dense,LSTM,GRU,Dropout,Flatten
-from common_func import loss_history,evaluate_method,read_data
+import tensorflow as tf
 from keras import optimizers
-from tensorflow import set_random_seed
-set_random_seed(6)
+from keras.layers import (GRU, LSTM, Activation, BatchNormalization, Dense,
+                          Dropout, Flatten, SimpleRNN)
+from keras.models import Sequential, load_model
+from keras.utils import np_utils
+from sklearn import metrics
+
+from common_func import evaluate_method, loss_history, read_data
+
+tf.random.set_seed(6)
 np.random.seed(6)
 train_x, train_y_1D = read_data.read_data('train_data_yongxin.csv')
 test_x, test_y_1D = read_data.read_data('test_data_yongxin.csv')
@@ -21,11 +34,11 @@ train_x = np.expand_dims(train_x,axis=2)
 test_x = np.expand_dims(test_x,axis=2)
 
 model = Sequential()
-model.add(GRU(50, batch_input_shape=(None, 16, 1), unroll=True))
+model.add(GRU(50, batch_input_shape=(None, 29, 1), unroll=True))
 model.add(Dropout(0.5))
 model.add(Dense(2))
 model.add(Activation('softmax'))
-optimizer = optimizers.Adam()
+optimizer = optimizers.adam_v2.Adam()
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 # Fit the model
 

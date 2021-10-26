@@ -12,8 +12,8 @@ from sklearn.model_selection import KFold
 
 #read train data
 np.random.seed(6)
-train_x, train_y_1D = read_data.read_data('train_data_yongxin.csv')
-test_x, test_y_1D = read_data.read_data('test_data_yongxin.csv')
+train_x, train_y_1D = read_data.read_data_ID('train_data_wanzhou.csv')
+test_x, test_y_1D = read_data.read_data_ID('test_data_wanzhou.csv')
 train_y = np_utils.to_categorical(train_y_1D, 2)
 test_y = np_utils.to_categorical(test_y_1D, 2)
 
@@ -24,11 +24,11 @@ cvscores = []
 for train, test in kfold.split(train_x, train_y_1D):
   # create model
     model = Sequential()
-    model.add(GRU(50, batch_input_shape=(None, 16, 1), unroll=True))
+    model.add(GRU(50, batch_input_shape=(None, 29, 1), unroll=True))
     model.add(Dropout(0.5))
     model.add(Dense(2))
     model.add(Activation('softmax'))
-    optimizer = optimizers.Adam()
+    optimizer = optimizers.adam_v2.Adam()
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
     # Fit the model
     model.fit(train_x[train], np_utils.to_categorical(train_y_1D[train], 2), epochs=150, batch_size=64, verbose=2)

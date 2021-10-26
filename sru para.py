@@ -1,15 +1,27 @@
+'''
+Author: yxsong
+Date: 2021-08-16 20:18:53
+LastEditTime: 2021-08-16 20:52:27
+LastEditors: yxsong
+Description: 
+FilePath: \RNN\sru para.py
+ 
+'''
 #!/usr/bin/python
 # # -*- coding=utf-8 -*-
 
-import pandas as pd
-from keras.utils import np_utils
 import numpy as np
-from keras.models import Sequential,Model
-from keras.layers import Dense,SimpleRNN,Activation,GRU,Dense,LSTM,GRU,Input,Embedding
-from common_func import loss_history,evaluate_method,read_data
+import pandas as pd
 from keras import optimizers
+from keras.layers import (GRU, LSTM, Activation, Dense, Embedding, Input,
+                          SimpleRNN)
+from keras.models import Model, Sequential
+from keras.utils import np_utils
 from sklearn.model_selection import KFold
+
+from common_func import evaluate_method, loss_history, read_data
 from sru import SRU
+
 #read train data
 np.random.seed(6)
 

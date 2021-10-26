@@ -1,12 +1,13 @@
 from __future__ import absolute_import
 import numpy as np
 
+from tensorflow.keras.layers import Layer, InputSpec
 from keras import backend as K
 from keras import activations
 from keras import initializers
 from keras import regularizers
 from keras import constraints
-from keras.engine import InputSpec
+# from tensorflow.python.keras.engine import InputSpec
 from keras.legacy import interfaces
 from keras.layers import Recurrent
 
