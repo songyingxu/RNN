@@ -1,17 +1,4 @@
-'''
-Author: yxsong
-Date: 2021-08-16 20:18:53
-LastEditTime: 2021-08-16 21:19:32
-LastEditors: yxsong
-Description: 
-FilePath: \RNN\gru.py
- 
-'''
-#!/usr/bin/python
-# # -*- coding=utf-8 -*-
-
-import random
-
+import sklearn
 import numpy as np
 import tensorflow as tf
 from keras import optimizers
@@ -21,17 +8,22 @@ from keras.models import Sequential, load_model
 from keras.utils import np_utils
 from sklearn import metrics
 
-from common_func import evaluate_method, loss_history, read_data
+from common_func import evaluate_method, loss_history, read_data, save_result
 
 tf.random.set_seed(6)
 np.random.seed(6)
-train_x, train_y_1D = read_data.read_data('train_data_yongxin.csv')
-test_x, test_y_1D = read_data.read_data('test_data_yongxin.csv')
-train_y = np_utils.to_categorical(train_y_1D, 2)
-test_y = np_utils.to_categorical(test_y_1D, 2)
 
-train_x = np.expand_dims(train_x,axis=2)
-test_x = np.expand_dims(test_x,axis=2)
+def Prepare_Data(path):
+    X, y, GeoID = read_data.read_data_ID(path)
+    train_x, test_x, train_y_1D, test_y_1D = sklearn.model_selection.train_test_split(X,y,test_size=0.3,random_state=0,stratify=y)
+    train_y = np_utils.to_categorical(train_y_1D, 2)
+    test_y = np_utils.to_categorical(test_y_1D, 2)
+
+    train_x = np.expand_dims(train_x,axis=2)
+    test_x = np.expand_dims(test_x,axis=2)
+    return X,y,GeoID,train_x,test_x,test_y_1D,train_y,test_y
+
+X, y, GeoID, train_x, test_x, test_y_1D, train_y, test_y = Prepare_Data('test_data_wanzhou.csv')
 
 model = Sequential()
 model.add(GRU(50, batch_input_shape=(None, 29, 1), unroll=True))
@@ -51,6 +43,8 @@ model.fit(train_x,train_y,validation_data= (test_x,test_y),verbose=2,callbacks=[
 
 y_prob_test = model.predict(test_x)     #output predict probability
 y_probability_first = [prob[1] for prob in y_prob_test]
+
+evaluate_method.plotROC_1D(y_probability_first, test_y_1D, plotROC=True)
 
 acc = evaluate_method.get_acc(test_y_1D, y_probability_first)  # AUC value
 test_auc = metrics.roc_auc_score(test_y_1D,y_probability_first)
@@ -75,3 +69,9 @@ print("f1 = " + str(f1))
 model.save('my_model_gru1.h5')
 # history.loss_plot('epoch')
 
+result_y = np_utils.to_categorical(y, 2)
+result_x = np.expand_dims(X,axis=2)
+y_pred = model.predict(result_x)
+y_pred_proba = [prob[1] for prob in y_pred]
+result_file_gru = './result/gru.txt'
+save_result.save_ID_Class_prob(GeoID, y_pred_proba, y_pred_proba, result_file_gru)

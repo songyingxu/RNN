@@ -9,11 +9,12 @@ from keras.layers import Dense,SimpleRNN,Activation,BatchNormalization,Dense,LST
 from common_func import loss_history,evaluate_method,read_data
 from keras import optimizers
 from sklearn.model_selection import KFold
+import sklearn
 
 #read train data
 np.random.seed(6)
-train_x, train_y_1D, _ = read_data.read_data_ID('train_data_wanzhou.csv')
-test_x, test_y_1D, _name = read_data.read_data_ID('test_data_wanzhou.csv')
+X, y, GeoID = read_data.read_data_ID('test_data_wanzhou.csv')
+train_x, test_x, train_y_1D, test_y_1D = sklearn.model_selection.train_test_split(X,y,test_size=0.3,random_state=0,stratify=y)
 train_y = np_utils.to_categorical(train_y_1D, 2)
 test_y = np_utils.to_categorical(test_y_1D, 2)
 
