@@ -57,7 +57,7 @@ print('Predicted labels', y_pred)
 print('True labels', y_test)
 y_pred_proba = automl_pipeline.predict_proba(X)[:,1]
 print('Predicted probas ',y_pred_proba[:5])
-evaluate_method.plotROC_1D(y_pred_proba, y_test, plotROC=True)
+evaluate_method.plotROC_1D(y_pred_proba, y, plotROC=True)
 
 result_file_automl = './result/automl.txt'
 save_result.save_ID_Class_prob(GeoID, y_pred, y_pred_proba, result_file_automl)
