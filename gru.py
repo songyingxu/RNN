@@ -12,9 +12,27 @@ from common_func import evaluate_method, loss_history, read_data, save_result
 
 tf.random.set_seed(6)
 np.random.seed(6)
+import pandas as pd
+def data_raw():
+    train = pd.read_csv('test_data_wanzhou.csv')
+    target = 'class'
+    IDCol = 'OBJECTID'
+    GeoID = train[IDCol]
+    print(train[target].value_counts())
+    # x_columns = [x for x in train.columns if x not in [target,IDCol,'GRID_CODE']]
+    x_columns = ['Elevation', 'Slope', 'Aspect', 'TRI', 'Curvature', 'Lithology', 'River', 'NDVI', 'NDWI', 'Rainfall', 'Earthquake', 'Land_use']
+    # x_columns = ['Elevation', 'Slope', 'Aspect', 'TRI', 'Curvature', 'Lithology', 'River', 'NDVI', 'NDWI', 'Rainfall']
+
+    # X_colums = [x for x in train.columns if x not in [target,IDCol,'GRID_CODE']]
+    X = train[x_columns]
+    y = train[target]
+    return X, y, GeoID
+
+
+# X_train, X_test, y_train, y_test =sklearn.model_selection.train_test_split(X,y,test_size=0.3,random_state=0,stratify=y)
 
 def Prepare_Data(path):
-    X, y, GeoID = read_data.read_data_ID(path)
+    X, y, GeoID = data_raw()
     train_x, test_x, train_y_1D, test_y_1D = sklearn.model_selection.train_test_split(X,y,test_size=0.3,random_state=0,stratify=y)
     train_y = np_utils.to_categorical(train_y_1D, 2)
     test_y = np_utils.to_categorical(test_y_1D, 2)
@@ -26,18 +44,18 @@ def Prepare_Data(path):
 X, y, GeoID, train_x, test_x, test_y_1D, train_y, test_y = Prepare_Data('test_data_wanzhou.csv')
 
 model = Sequential()
-model.add(GRU(50, batch_input_shape=(None, 29, 1), unroll=True))
+model.add(GRU(50, batch_input_shape=(None, 12, 1), unroll=True))
 model.add(Dropout(0.5))
 model.add(Dense(2))
 model.add(Activation('softmax'))
-optimizer = optimizers.adam_v2.Adam()
+optimizer = optimizers.Adam()
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 # Fit the model
 
 print(model.summary())
 history = loss_history.LossHistory()
 # model.fit(train_x_aug,train_y_aug,validation_split=0.1,verbose=2,callbacks=[history], batch_size=500,epochs=500)
-model.fit(train_x,train_y,validation_data= (test_x,test_y),verbose=2,callbacks=[history],batch_size=64,epochs=150)
+model.fit(train_x,train_y,validation_data= (test_x,test_y),verbose=2,callbacks=[history],batch_size=64,epochs=100)
 
 # model = load_model('my_model_gru.h5')
 
@@ -49,7 +67,7 @@ evaluate_method.plotROC_1D(y_probability_first, test_y_1D, plotROC=True)
 acc = evaluate_method.get_acc(test_y_1D, y_probability_first)  # AUC value
 test_auc = metrics.roc_auc_score(test_y_1D,y_probability_first)
 kappa = evaluate_method.get_kappa(test_y_1D, y_probability_first)
-IOA = evaluate_method.get_IOA(test_y_1D, y_probability_first)
+# IOA = evaluate_method.get_IOA(test_y_1D, y_probability_first)
 MCC = evaluate_method.get_mcc(test_y_1D, y_probability_first)
 recall = evaluate_method.get_recall(test_y_1D, y_probability_first)
 precision = evaluate_method.get_precision(test_y_1D, y_probability_first)
@@ -60,7 +78,7 @@ f1 = evaluate_method.get_f1(test_y_1D, y_probability_first)
 print("ACC = " + str(acc))
 print("AUC = " + str(test_auc))
 print(' kappa = '+ str(kappa))
-print("IOA = " + str(IOA))
+# print("IOA = " + str(IOA))
 print("MCC = " + str(MCC))
 print(' precision = '+ str(precision))
 print("recall = " + str(recall))

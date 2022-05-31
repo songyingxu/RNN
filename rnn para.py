@@ -8,12 +8,12 @@ from keras.models import Sequential
 from keras.layers import Dense,SimpleRNN,Activation,Dropout,Dense,LSTM,Conv1D,MaxPool1D,Flatten
 from common_func import loss_history,evaluate_method,read_data
 from keras import optimizers
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold,train_test_split
 
 #read train data
 np.random.seed(6)
-train_x, train_y_1D = read_data.read_data('train_data_yongxin.csv')
-test_x, test_y_1D = read_data.read_data('test_data_yongxin.csv')
+X, y, GeoID = read_data.read_data_ID('test_data_wanzhou.csv')
+train_x, test_x, train_y_1D, test_y_1D = train_test_split(X,y,test_size=0.3,random_state=0,stratify=y)
 train_y = np_utils.to_categorical(train_y_1D, 2)
 test_y = np_utils.to_categorical(test_y_1D, 2)
 
@@ -24,7 +24,7 @@ cvscores = []
 for train, test in kfold.split(train_x, train_y_1D):
   # create model
     model = Sequential()
-    model.add(SimpleRNN(50, batch_input_shape=(None, 16, 1), unroll=True))
+    model.add(SimpleRNN(50, batch_input_shape=(None, 29, 1), unroll=True))
     # model.add(Dropout(0.5))
     model.add(Dense(2))
     model.add(Activation('softmax'))

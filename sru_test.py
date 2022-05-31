@@ -10,8 +10,7 @@ from keras.models import Sequential,Model,load_model
 from keras.layers import Dense,SimpleRNN,Activation,GRU,Dense,LSTM,GRU,Input,Embedding
 from common_func import loss_history,evaluate_method,read_data
 from keras import optimizers
-from tensorflow import set_random_seed
-set_random_seed(6)
+
 np.random.seed(6)
 
 max_features = 10000

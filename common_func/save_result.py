@@ -4,7 +4,7 @@ import pandas as pd
 from imblearn.ensemble import (BalancedBaggingClassifier,
                                BalancedRandomForestClassifier,
                                EasyEnsembleClassifier, RUSBoostClassifier)
-from keras.utils import np_utils
+# from keras.utils import np_utils
 from sklearn.metrics import auc, roc_curve
 from sklearn.model_selection import train_test_split
 

@@ -30,7 +30,7 @@ for train, test in kfold.split(train_x, train_y_1D):
     model.add(Dense(2))
     # model.add(BatchNormalization())
     model.add(Activation('softmax'))
-    optimizer = optimizers.adam_v2.Adam()
+    optimizer = optimizers.Adam()
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
     # Fit the model
     model.fit(train_x[train], np_utils.to_categorical(train_y_1D[train], 2), epochs=100, batch_size=32, verbose=2)

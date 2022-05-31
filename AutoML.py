@@ -1,3 +1,4 @@
+
 from sklearn import set_config
 import sklearn
 from sklearn.pipeline import Pipeline
@@ -6,8 +7,25 @@ from sklearn.preprocessing import StandardScaler
 from flaml import AutoML
 from common_func import evaluate_method, read_data, save_result
 
-X, y, GeoID = read_data.read_data_ID('test_data_wanzhou.csv')
-X_train,X_test, y_train, y_test =sklearn.model_selection.train_test_split(X,y,test_size=0.3,random_state=0,stratify=y)
+import pandas as pd
+
+# X, y, GeoID = read_data.read_data_ID('test_data_wanzhou.csv')
+def data_raw():
+    train = pd.read_csv('test_data_wanzhou.csv')
+    target = 'class'
+    IDCol = 'OBJECTID'
+    GeoID = train[IDCol]
+    print(train[target].value_counts())
+    # x_columns = [x for x in train.columns if x not in [target,IDCol,'GRID_CODE']]
+    x_columns = ['Elevation', 'Slope', 'Aspect', 'TRI', 'Curvature', 'Lithology', 'River', 'NDVI', 'NDWI', 'Rainfall', 'Earthquake', 'Land_use']
+    # x_columns = ['Elevation', 'Slope', 'Aspect', 'TRI', 'Curvature', 'Lithology', 'River', 'NDVI', 'NDWI', 'Rainfall']
+
+    # X_colums = [x for x in train.columns if x not in [target,IDCol,'GRID_CODE']]
+    X = train[x_columns]
+    y = train[target]
+    return X, y, GeoID
+X, y, GeoID = data_raw()
+X_train, X_test, y_train, y_test =sklearn.model_selection.train_test_split(X,y,test_size=0.3,random_state=0,stratify=y)
 
 set_config(display='diagram') ## 展示Piline图
 imputer = SimpleImputer()
@@ -25,7 +43,7 @@ settings = {
     "time_budget": 60,  # total running time in seconds
     "metric": 'f1',  # primary metrics can be chosen from: ['accuracy','roc_auc', 'roc_auc_ovr', 'roc_auc_ovo', 'f1','log_loss','mae','mse','r2']
     "task": 'classification',  # task type   
-    "estimator_list":['lgbm', 'xgboost', 'catboost', 'rf', 'extra_tree'],
+    "estimator_list":['extra_tree'],
     "log_file_name": 'airlines_experiment.log',  # flaml log file
 }
 

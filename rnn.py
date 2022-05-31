@@ -1,56 +1,75 @@
-'''
-Author: yxsong
-Date: 2021-08-16 20:18:53
-LastEditTime: 2021-08-16 20:47:37
-LastEditors: yxsong
-Description: 
-FilePath: \RNN\rnn.py
- 
-'''
-#!/usr/bin/python
-# # -*- coding=utf-8 -*-
-
 import random
-from sklearn import metrics
-from keras.utils import np_utils
+
 import numpy as np
-from keras.models import Sequential,load_model
-from keras.layers import Dense,SimpleRNN,Activation,BatchNormalization,Dense,LSTM,Conv1D,MaxPool1D,Flatten
-from common_func import loss_history,evaluate_method,read_data
-from keras import optimizers
+import sklearn
 import tensorflow as tf
+from keras import optimizers
+from keras.layers import (LSTM, Activation, BatchNormalization, Conv1D, Dense,
+                          Flatten, MaxPool1D, SimpleRNN)
+from keras.models import Sequential, load_model
+from keras.utils import np_utils
+from sklearn import metrics
+from sklearn.model_selection import train_test_split
+
+from common_func import evaluate_method, loss_history, read_data, save_result
 
 tf.random.set_seed(6)
 np.random.seed(6)
-train_x, train_y_1D = read_data.read_data('train_data_yongxin.csv')
-test_x, test_y_1D = read_data.read_data('test_data_yongxin.csv')
-train_y = np_utils.to_categorical(train_y_1D, 2)
-test_y = np_utils.to_categorical(test_y_1D, 2)
 
-train_x = np.expand_dims(train_x,axis=2)
-test_x = np.expand_dims(test_x,axis=2)
+import pandas as pd
+def data_raw():
+    train = pd.read_csv('test_data_wanzhou.csv')
+    target = 'class'
+    IDCol = 'OBJECTID'
+    GeoID = train[IDCol]
+    print(train[target].value_counts())
+    # x_columns = [x for x in train.columns if x not in [target,IDCol,'GRID_CODE']]
+    x_columns = ['Elevation', 'Slope', 'Aspect', 'TRI', 'Curvature', 'Lithology', 'River', 'NDVI', 'NDWI', 'Rainfall', 'Earthquake', 'Land_use']
+    # x_columns = ['Elevation', 'Slope', 'Aspect', 'TRI', 'Curvature', 'Lithology', 'River', 'NDVI', 'NDWI', 'Rainfall']
+
+    # X_colums = [x for x in train.columns if x not in [target,IDCol,'GRID_CODE']]
+    X = train[x_columns]
+    y = train[target]
+    return X, y, GeoID
+
+
+# X_train, X_test, y_train, y_test =sklearn.model_selection.train_test_split(X,y,test_size=0.3,random_state=0,stratify=y)
+
+def Prepare_Data(path):
+    X, y, GeoID = data_raw()
+    train_x, test_x, train_y_1D, test_y_1D = sklearn.model_selection.train_test_split(X,y,test_size=0.3,random_state=0,stratify=y)
+    train_y = np_utils.to_categorical(train_y_1D, 2)
+    test_y = np_utils.to_categorical(test_y_1D, 2)
+
+    train_x = np.expand_dims(train_x,axis=2)
+    test_x = np.expand_dims(test_x,axis=2)
+    return X,y,GeoID,train_x,test_x,test_y_1D,train_y,test_y
+
+X, y, GeoID, train_x, test_x, test_y_1D, train_y, test_y = Prepare_Data('test_data_wanzhou.csv')
 
 model = Sequential()
-model.add(SimpleRNN(50, batch_input_shape=(None, 16, 1), unroll=True))
+model.add(SimpleRNN(50, batch_input_shape=(None, 12, 1), unroll=True))
 # model.add(Dropout(0.5))
 model.add(Dense(2))
 model.add(Activation('softmax'))
-optimizer = optimizers.adam_v2.Adam()
+optimizer = optimizers.Adam()
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 # Fit the model
 print(model.summary())
 history = loss_history.LossHistory()
-model.fit(train_x,train_y,validation_data= (test_x,test_y),verbose=2,callbacks=[history],batch_size=64,epochs=50)
+model.fit(train_x,train_y,validation_data= (test_x,test_y),verbose=2,callbacks=[history],batch_size=64,epochs=100)
 
 # model = load_model('my_model_RNN.h5')
 
-y_prob_test = model.predict(test_x)     #output predict probability
+y_prob_test = model.predict(test_x)     
+
+#output predict probability
 y_probability_first = [prob[1] for prob in y_prob_test]
 
 acc = evaluate_method.get_acc(test_y_1D, y_probability_first)  # AUC value
 test_auc = metrics.roc_auc_score(test_y_1D,y_probability_first)
 kappa = evaluate_method.get_kappa(test_y_1D, y_probability_first)
-IOA = evaluate_method.get_IOA(test_y_1D, y_probability_first)
+# IOA = evaluate_method.get_IOA(test_y_1D, y_probability_first)
 MCC = evaluate_method.get_mcc(test_y_1D, y_probability_first)
 recall = evaluate_method.get_recall(test_y_1D, y_probability_first)
 precision = evaluate_method.get_precision(test_y_1D, y_probability_first)
@@ -61,12 +80,21 @@ f1 = evaluate_method.get_f1(test_y_1D, y_probability_first)
 print("ACC = " + str(acc))
 print("AUC = " + str(test_auc))
 print(' kappa = '+ str(kappa))
-print("IOA = " + str(IOA))
+# print("IOA = " + str(IOA))
 print("MCC = " + str(MCC))
 print(' precision = '+ str(precision))
 print("recall = " + str(recall))
 print("f1 = " + str(f1))
 
-# model.save('my_model_RNN1.h5')
-# history.loss_plot('epoch')
+model.save('my_model_RNN1.h5')
+history.loss_plot('epoch')
 
+result_y = np_utils.to_categorical(y, 2)
+result_x = np.expand_dims(X,axis=2)
+y_pred = model.predict(result_x)
+y_pred_proba = [prob[1] for prob in y_pred]
+
+evaluate_method.plotROC_1D(y_pred_proba, y, plotROC=True)
+
+result_file = './result/rnn.txt'
+save_result.save_ID_Class_prob(GeoID, y_pred_proba, y_pred_proba, result_file)
